@@ -24,7 +24,7 @@ def player(board):
     Returns player who has the next turn on a board.
     """
     if terminal(board):
-        return X 
+        return None 
     elif board == initial_state():
         return X
 
@@ -72,10 +72,10 @@ def winner(board):
     """
     Returns the winner of the game, if there is one.
     """
+    X = "X"
+    O = "O"
     dig = 1
     sdig = 1
-    clu = 1
-    ro = 1
     for i in range(3):
         clu = 1
         for j in range(3):
@@ -85,29 +85,29 @@ def winner(board):
                 clu += 1
                 if clu == 3:
                     return (X if board[i][j]=="X" else O)
-            if i+1<3 and j+1<3 and i==j and board[i][j] == board[i+1][j+1]:
+            if i+1 <3 and j+1<3 and i==j and board[i][j] == board[i+1][j+1]:
                 dig += 1
                 if dig == 3:
                     return X if board[i][j]=="X" else O
-    for j in range(2):
+    for j in range(3):
         ro = 1
-        for i in range(2):
+        for i in range(3):
             if board[i][j] == None:
                 continue
             if i+1<3 and board[i][j] == board[i+1][j]:
                 ro += 1
                 if ro == 3:
-                    return X if board[i][j]=="X" else O
-
+                    return (X if board[i][j]=="X" else O)
     for i in range(0, 2):
-        if board[i][j] == None:
-            continue
+        if board[i][i] == None:
+                continue
         j = 2-i
         if board[i][j] == board[i+1][j-1]:
             sdig += 1
             if sdig == 3:
-                return X if board[i][j]=="X" else O
+                return (X if board[i][j]=="X" else O)
     return None
+
 
 def terminal(board):
     """
@@ -139,45 +139,48 @@ def minimax(board):
     """
     if terminal(board):
         return None
+    a = float("-inf")
     v = float("inf")
+    b = float("inf")
     opt = ()
     if player(board) == "O":
+        prev = v
         for act in actions(board):
-            if v != min(v, max_value(result(board, act))):
-                v = min(v, max_value(result(board, act)))
+            v = min(v, max_value(result(board, act), a, b))
+            if v != prev:
                 opt = act
+                prev = v
         return opt 
-
-    v = float("-inf")
+    a = float("-inf")
+    b = float("inf")
+    nv = float("-inf")
     if player(board) == "X":
+        prev = nv
         for act in actions(board):
-            if v != max(v, min_value(result(board, act))):
-                v = max(v, min_value(result(board, act)))
+            nv = max(nv, min_value(result(board, act), a, b))
+            if nv != prev:
                 opt = act
+                prev = nv
         return opt 
-    #     maxm = -3487
-    #     opt = ()
-    #     for act in actions(board):
-    #     mnm = 3487
-    #     opt = ()
-    #     for act in actions(board):
-    #         if mnm != min(mnm, min_value(board, act)):
-    #             mnm = min(mnm, min_value(board, act))
-    #             opt = act
-    #     return opt
         
-def min_value(board):
+def min_value(board, a, b):
     if terminal(board):
         return utility(board)
     v = float("inf")
     for act in actions(board):
-        v = min(v,max_value(result(board, act)))
+        v = min(v,max_value(result(board, act), a, b))
+        if v < a:
+            return v
+        b = min(b, v)
     return v
 
-def max_value(board):
+def max_value(board, a, b):
     if terminal(board):
         return utility(board)
     v = float("-inf")
     for act in actions(board):
-        v = max(v, min_value(result(board, act)))
+        v = max(v, min_value(result(board, act), a, b))
+        if v > b:
+            return v
+        a = max(a, v)
     return v
